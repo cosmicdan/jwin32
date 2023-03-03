@@ -38,7 +38,7 @@ public class COMGenerator {
     static {
         SCOPE.accessSpecifier.fin = OBJ.accessSpecifier.fin = VTBL.accessSpecifier.fin = true;
         OBJ.accessSpecifier.vis = AccessSpecifier.Visibility.PUBLIC;
-        SCOPE.type = CType.RESOURCE_SCOPE;
+        SCOPE.type = CType.MEMORY_SESSION;
         SCOPE.name = "scope";
         SCOPE.initializer.append("ResourceScope.newImplicitScope()");
 

@@ -210,3 +210,8 @@ buildNumber.properties
 
 # End of https://www.toptal.com/developers/gitignore/api/eclipse,maven,java,intellij+all
 guidlog.txt
+# Ignore Gradle project-specific cache directory
+.gradle
+
+# Ignore Gradle build output directory
+build

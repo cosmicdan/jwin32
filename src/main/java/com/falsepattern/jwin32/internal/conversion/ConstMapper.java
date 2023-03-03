@@ -25,13 +25,14 @@ import com.falsepattern.jwin32.internal.conversion.common.AccessSpecifier;
 import com.falsepattern.jwin32.internal.conversion.common.CClass;
 import com.falsepattern.jwin32.internal.conversion.common.CField;
 import com.falsepattern.jwin32.internal.conversion.common.CType;
-import jdk.incubator.foreign.CLinker;
-import jdk.incubator.foreign.MemoryAddress;
-import jdk.incubator.foreign.MemorySegment;
+
+import com.falsepattern.jwin32.memory.MemoryAllocator;
 import win32.pure.Win32;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.foreign.MemoryAddress;
+import java.lang.foreign.MemorySegment;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.util.*;
@@ -97,10 +98,13 @@ public class ConstMapper {
                                     method.setAccessible(true);
                                     var value = method.invoke(null);
                                     if (type.equals(CType.MEMORY_ADDRESS)) {
-                                        var offset = ((MemoryAddress)value).segmentOffset(MemorySegment.globalNativeSegment());
-                                        field.initializer.append(offset).append('L');
+                                        //var offset = ((MemoryAddress)value).segmentOffset(MemorySegment.globalNativeSegment());
+                                        //field.initializer.append(offset).append('L');
+                                        field.initializer.append(((MemoryAddress)value).toRawLongValue()).append('L');
                                     } else {
-                                        var str = CLinker.toJavaString((MemorySegment) value);
+                                        ((MemorySegment) value).getUtf8String(0);
+                                        //var str = CLinker.toJavaString((MemorySegment) value);
+                                        String str = MemoryAllocator.fromCString((MemorySegment) value);
                                         field.initializer.append('"').append(escape(str)).append('"');
                                     }
                                 } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {

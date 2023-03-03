@@ -21,9 +21,8 @@
  */
 package com.falsepattern.jwin32.memory;
 
-import jdk.incubator.foreign.MemorySegment;
-import jdk.incubator.foreign.ResourceScope;
-
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.MemorySession;
 import java.util.Stack;
 
 /**
@@ -34,25 +33,25 @@ public class MemoryStack implements MemoryAllocator, AutoCloseable {
 
     private final MemorySegment rootSegment;
     @SuppressWarnings("FieldCanBeLocal")
-    private final ResourceScope scope;
+    private final MemorySession scope;
     private final Stack<Long> offsets = new Stack<>();
-    private final Stack<ResourceScope> scopes = new Stack<>();
+    private final Stack<MemorySession> scopes = new Stack<>();
 
-    private ResourceScope currentScope;
+    private MemorySession currentScope;
     private long baseOffset = 0;
     private long currentOffset = 0;
 
     private static final ThreadLocal<MemoryStack> threadLocalStack = ThreadLocal.withInitial(() -> {
-        var scope = ResourceScope.newImplicitScope();
+        var scope = MemorySession.openImplicit();
         //4 MB thread local stack
         var segment = MemorySegment.allocateNative(4 * 1024 * 1024, MAX_ALIGNMENT, scope);
         return new MemoryStack(segment, scope);
     });
 
-    private MemoryStack(MemorySegment rootSegment, ResourceScope scope) {
+    private MemoryStack(MemorySegment rootSegment, MemorySession scope) {
         this.scope = scope;
         this.rootSegment = rootSegment;
-        this.currentScope = ResourceScope.newConfinedScope();
+        this.currentScope = MemorySession.openConfined();
     }
 
     private void align(long alignment) {
@@ -89,7 +88,7 @@ public class MemoryStack implements MemoryAllocator, AutoCloseable {
     public MemoryStack push() {
         offsets.push(baseOffset);
         scopes.push(currentScope);
-        currentScope = ResourceScope.newConfinedScope();
+        currentScope = MemorySession.openConfined();
         baseOffset = currentOffset;
         return this;
     }
@@ -126,7 +125,7 @@ public class MemoryStack implements MemoryAllocator, AutoCloseable {
     /**
      * @return The currently active memory scope for functions that require one.
      */
-    public ResourceScope scope() {
+    public MemorySession scope() {
         return currentScope;
     }
 }
